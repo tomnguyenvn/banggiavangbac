@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Bảng Giá DOJI – TGKC</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  html, body {
+    width: 100%; height: 100%;
+    background: #000;
+    overflow: hidden;
+  }
+  #wrap {
+    display: flex;
+    flex-direction: column;
+    width: 100vw;
+    height: 100vh;
+  }
+
+  /* ─── PHẦN BẢNG GIÁ (iframe banggialed.doji.vn) ─── */
+  #price-frame {
+    width: 100%;
+    border: none;
+    flex-shrink: 0;
+    background: #000;
+    /* Scrolling tắt để tránh thanh cuộn hiện trên màn hình */
+    overflow: hidden;
+  }
+
+  /* ─── PHẦN MEDIA CHÂN (ảnh / video) ─── */
+  #footer-media {
+    flex: 1;
+    width: 100%;
+    background: #000;
+    position: relative;
+    overflow: hidden;
+    min-height: 0; /* tránh bị đẩy tràn khi priceFrameHeight quá lớn */
+  }
+  #footer-media img,
+  #footer-media video {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+  }
+
+  .placeholder {
+    width: 100%; height: 100%;
+    display: flex; align-items: center; justify-content: center;
+    color: #444; font-family: Arial, sans-serif; font-size: 14px;
+    flex-direction: column;
+    gap: 8px;
+    background: #fff;
+  }
+  .placeholder b { color: #1565c0; font-size: 26px; }
+</style>
+</head>
+<body>
+
+<div id="wrap">
+  <!-- Bảng giá DOJI -->
+  <iframe id="price-frame" scrolling="no" src="https://banggialed.doji.vn/"></iframe>
+
+  <!-- Vùng media chân màn hình -->
+  <div id="footer-media"></div>
+</div>
+
+<script>
+// ═══════════════════════════════════════════════════════
+// ★ CẤU HÌNH — chỉ cần sửa ở đây
+// ═══════════════════════════════════════════════════════
+const CONFIG = {
+  // Chiều cao bảng giá DOJI (px).
+  // ⚠️ QUAN TRỌNG: phải đo đúng chiều cao THẬT của nội dung trang DOJI
+  // (không phải đoán) — xem hướng dẫn đo bên dưới script.
+  priceFrameHeight: 1267,
+
+  mediaType: 'image',   // 'image' hoặc 'video'
+  imageUrl: 'banner.jpg',
+  videoUrl: '',
+  videoLoop: true,
+  videoAutoplay: true,
+};
+// ═══════════════════════════════════════════════════════
+
+function setup() {
+  const frame = document.getElementById('price-frame');
+  frame.style.height = CONFIG.priceFrameHeight + 'px';
+
+  const footer = document.getElementById('footer-media');
+
+  if (CONFIG.mediaType === 'video' && CONFIG.videoUrl) {
+    footer.innerHTML = `
+      <video
+        src="${CONFIG.videoUrl}"
+        ${CONFIG.videoAutoplay ? 'autoplay' : ''}
+        ${CONFIG.videoLoop ? 'loop' : ''}
+        muted
+        playsinline
+      ></video>`;
+  } else if (CONFIG.mediaType === 'image' && CONFIG.imageUrl) {
+    footer.innerHTML = `<img src="${CONFIG.imageUrl}" alt="banner">`;
+  } else {
+    const w = footer.clientWidth;
+    const h = footer.clientHeight;
+    footer.innerHTML = `
+      <div class="placeholder">
+        <div>Kích thước vùng media (chân màn hình):</div>
+        <b>${w} × ${h} px</b>
+        <div>Độ phân giải toàn màn hình: ${window.innerWidth} × ${window.innerHeight} px</div>
+        <div style="margin-top:10px;color:#888">Dán link ảnh/video vào CONFIG để hiển thị</div>
+      </div>`;
+  }
+}
+
+setup();
+
+// ═══════════════════════════════════════════════════════
+// DEBUG: Đo chiều cao thật của nội dung iframe DOJI
+// Mở Console (F12) sẽ thấy log số liệu chính xác cần điền vào priceFrameHeight
+// (Chỉ hoạt động nếu trang DOJI KHÔNG chặn cross-origin — nếu lỗi, dùng cách đo thủ công bên dưới)
+// ═══════════════════════════════════════════════════════
+window.addEventListener('load', () => {
+  try {
+    const frame = document.getElementById('price-frame');
+    const doc = frame.contentWindow.document;
+    const realHeight = doc.documentElement.scrollHeight;
+    console.log('✅ Chiều cao thật của nội dung DOJI:', realHeight, 'px');
+    console.log('→ Hãy sửa priceFrameHeight =', realHeight, 'trong CONFIG');
+  } catch(e) {
+    console.warn('⚠️ Không đo được tự động (cross-origin bị chặn).');
+    console.warn('→ Dùng cách đo thủ công: F12 → chọn iframe → phải chuột "Inspect"');
+    console.warn('→ Trong Elements, hover vào thẻ <html> hoặc <body> bên trong iframe,');
+    console.warn('   xem chiều cao hiển thị ở góc dưới bên phải Chrome.');
+  }
+});
+</script>
+</body>
+</html>
